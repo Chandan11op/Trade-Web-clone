@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
-import { Doughnut, Pie } from 'react-chartjs-2';
+import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import Rules from './Rules';
 import Layout from '../components/Layout';
 import Loader from '../components/Loader';
-import { formatDate, formatDateTime } from '../utils/dateFormatter';
+import { formatDateTime } from '../utils/dateFormatter';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -107,9 +107,6 @@ const AdminDashboard = () => {
     const [showUserDashboardModal, setShowUserDashboardModal] = useState(false);
     const [viewingUser, setViewingUser] = useState(null);
     const [userDashLoading, setUserDashLoading] = useState(false);
-    const [userDashTrades, setUserDashTrades] = useState([]);
-    const [userDashLedger, setUserDashLedger] = useState([]);
-    const [userDashSummary, setUserDashSummary] = useState(null);
     const [userDashMetrics, setUserDashMetrics] = useState({ netAssetValue: 0, realizedPnL: 0, unrealizedPnL: 0, holdingValue: 0, completedTrades: 0 });
 
     const openUserDashboard = async (user) => {
@@ -323,16 +320,7 @@ const AdminDashboard = () => {
         setIsSubmitting(false);
     };
 
-    const openTradeDetails = async (trade) => {
-        setDetailsTrade(trade);
-        try {
-            const res = await api.get(`/trades/${trade._id}/allocations`);
-            setTradeDetailsAllocations(res.data);
-            setShowTradeDetailsModal(true);
-        } catch (error) {
-            alert(error.response?.data?.message || "Error fetching trade details.");
-        }
-    };
+
 
     // ----- Allocation Logic -----
     const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -487,10 +475,7 @@ const AdminDashboard = () => {
         setIsSubmitting(false);
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('userInfo');
-        navigate('/login');
-    };
+
 
     const downloadAdminExcel = async () => {
         try {
@@ -604,12 +589,12 @@ const AdminDashboard = () => {
         return map;
     }, [users]);
 
-    const getUserDisplayName = (mob_num, backEndName) => {
+    const getUserDisplayName = useCallback((mob_num, backEndName) => {
         if (backEndName && isNaN(backEndName) && backEndName !== 'N/A') return backEndName;
         const cleanMob = String(mob_num || '').trim();
         if (userMap[cleanMob]) return userMap[cleanMob];
         return mob_num || 'N/A';
-    };
+    }, [userMap]);
 
     const sortedAllocations = useMemo(() => {
         let filtered = allocations.filter(a => {
@@ -627,7 +612,7 @@ const AdminDashboard = () => {
             });
         }
         return sortedData(filtered, 'buy_timestamp');
-    }, [allocations, allocFilterStatus, allocSearch, sortConfig, sortedData]);
+    }, [allocations, allocFilterStatus, allocSearch, sortConfig, sortedData, getUserDisplayName]);
 
     const toggleRow = (id) => {
         const newExpandedRows = new Set(expandedRows);
@@ -653,8 +638,7 @@ const AdminDashboard = () => {
 
 
 
-    const thStyle = { padding: '12px', borderBottom: '2px solid var(--border)', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' };
-    const tdStyle = { padding: '14px 12px', borderBottom: '1px solid var(--border)', fontSize: '0.9rem' };
+
     const inputStyle = { width: '100%', padding: '10px', marginBottom: '15px', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--bg-body)', color: 'var(--text-main)' };
 
     // Modal Overlay Styles

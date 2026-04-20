@@ -9,7 +9,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [trades, setTrades] = useState([]);
     const [ledgerEntries, setLedgerEntries] = useState([]);
-    const [ledgerSummary, setLedgerSummary] = useState(null);
+
     const [metrics, setMetrics] = useState({
         netAssetValue: 0,
         realizedPnL: 0,
@@ -36,13 +36,14 @@ const Dashboard = () => {
                 );
                 
                 setTrades(validTrades.sort((a, b) => new Date(b.buy_timestamp) - new Date(a.buy_timestamp)));
-                setLedgerSummary(statsRes.data);
+
 
                 // Process ledger entries for running balance
                 const sortedEntries = [...ledgerEntriesRes.data].reverse();
                 let currentBal = 0;
                 const withBalance = sortedEntries.map(entry => {
-                    const investedValue = (entry.total_value || (entry.allocation_price * entry.allocation_qty)) + (entry.buy_brokerage || 0);
+                    // const investedValue = (entry.total_value || (entry.allocation_price * entry.allocation_qty)) + (entry.buy_brokerage || 0);
+
                     currentBal += (entry.amt_cr || 0) - (entry.amt_dr || 0);
                     return { ...entry, runningBalance: currentBal };
                 });
