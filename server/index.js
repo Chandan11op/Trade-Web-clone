@@ -1,7 +1,6 @@
 // server/index.js
 require("dotenv").config();
 const express = require('express');
-const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const tradeRoutes = require('./routes/tradeRoutes');
@@ -9,13 +8,10 @@ const ledgerRoutes = require('./routes/ledgerRoutes');
 const userRoutes = require("./routes/userRoutes");
 const excelRoutes = require('./routes/excelRoutes');
 const ruleRoutes = require("./routes/ruleRoutes");
-const userLedgerRoutes = require("./routes/userLedgerRoutes");
+const userLedgerRoutes = require("./userLedgerRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const adminUserViewRoutes = require("./routes/adminUserViewRoutes");
 const { authMiddleware } = require("./middleware/authMiddleware");
-
-// Load env vars
-dotenv.config();
 
 // Connect to Database
 connectDB();
@@ -23,14 +19,27 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: ['http://localhost:3000',
-    'http://localhost:5173',
-    'https://fin-trade.netlify.app',
-    "https://smartsip.co.in",
-    "https://www.smartsip.co.in"],
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  process.env.FRONTEND_URL,
+  'https://fin-trade.netlify.app',
+  "https://smartsip.co.in",
+  "https://www.smartsip.co.in"
+].filter(Boolean);
 
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed request types
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl) 
+    // or if the origin is in our allowed list 
+    // or if it ends with .vercel.app
+    if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
 
