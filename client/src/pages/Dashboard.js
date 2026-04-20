@@ -42,9 +42,8 @@ const Dashboard = () => {
                 const sortedEntries = [...ledgerEntriesRes.data].reverse();
                 let currentBal = 0;
                 const withBalance = sortedEntries.map(entry => {
-                    // const investedValue = (entry.total_value || (entry.allocation_price * entry.allocation_qty)) + (entry.buy_brokerage || 0);
-
                     currentBal += (entry.amt_cr || 0) - (entry.amt_dr || 0);
+
                     return { ...entry, runningBalance: currentBal };
                 });
                 setLedgerEntries(withBalance.reverse().slice(0, 2));

@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import Rules from './Rules';
 import Layout from '../components/Layout';
 import Loader from '../components/Loader';
 import { formatDateTime } from '../utils/dateFormatter';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -47,10 +44,7 @@ const AdminDashboard = () => {
     const [showTradeModal, setShowTradeModal] = useState(false);
     const [showUserProfileModal, setShowUserProfileModal] = useState(false);
 
-    // Trade Details Modal
-    const [showTradeDetailsModal, setShowTradeDetailsModal] = useState(false);
-    const [detailsTrade, setDetailsTrade] = useState(null);
-    const [tradeDetailsAllocations, setTradeDetailsAllocations] = useState([]);
+
 
     // Allocation & Close Modals
     const [showAllocateModal, setShowAllocateModal] = useState(false);
@@ -497,17 +491,7 @@ const AdminDashboard = () => {
         }
     };
 
-    const doughnutData = useMemo(() => {
-        const activeUsers = users.filter(u => u.role !== 'admin' && (u.current_balance > 0 || u.percentage > 0));
-        return {
-            labels: activeUsers.map(u => u.user_name),
-            datasets: [{
-                data: activeUsers.map(u => u.current_balance || u.percentage || 0),
-                backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'],
-                borderWidth: 0
-            }]
-        };
-    }, [users]);
+
 
     // ----- Sorting Logic -----
     const requestSort = (key) => {
