@@ -4,6 +4,11 @@ import api from '../services/api';
 import Layout from '../components/Layout';
 import Loader from '../components/Loader';
 import { formatDateTime } from '../utils/dateFormatter';
+import Rules from './Rules';
+import { Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 
 
@@ -43,6 +48,9 @@ const AdminDashboard = () => {
     const [showFundsModal, setShowFundsModal] = useState(false);
     const [showTradeModal, setShowTradeModal] = useState(false);
     const [showUserProfileModal, setShowUserProfileModal] = useState(false);
+    const [showTradeDetailsModal, setShowTradeDetailsModal] = useState(false);
+    const [detailsTrade, setDetailsTrade] = useState(null);
+    const [tradeDetailsAllocations, setTradeDetailsAllocations] = useState([]);
 
 
 
@@ -314,6 +322,13 @@ const AdminDashboard = () => {
         setIsSubmitting(false);
     };
 
+
+    const openTradeDetails = useCallback((trade) => {
+        setDetailsTrade(trade);
+        const filtered = allocations.filter(a => String(a.master_trade_id?._id || a.master_trade_id) === String(trade._id));
+        setTradeDetailsAllocations(filtered);
+        setShowTradeDetailsModal(true);
+    }, [allocations]);
 
 
     // ----- Allocation Logic -----
@@ -620,6 +635,30 @@ const AdminDashboard = () => {
     }, [ledger, ledgerSearch, sortedData]);
 
 
+    const doughnutData = useMemo(() => {
+        const clients = users.filter(u => u.role !== 'admin');
+        return {
+            labels: clients.map(u => u.user_name),
+            datasets: [{
+                label: 'User Balances',
+                data: clients.map(u => u.current_balance || 0),
+                backgroundColor: [
+                    'rgba(99, 102, 241, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(139, 92, 246, 0.8)',
+                    'rgba(236, 72, 153, 0.8)',
+                    'rgba(6, 182, 212, 0.8)',
+                    'rgba(249, 115, 22, 0.8)',
+                ],
+                borderColor: 'var(--bg-card)',
+                borderWidth: 2,
+            }]
+        };
+    }, [users]);
+
+
 
 
 
@@ -847,7 +886,7 @@ const AdminDashboard = () => {
                                                 <span className="cell-label">Date</span>
                                                 {formatDateTime(t.buy_timestamp || t.createdAt)}
                                             </div>
-                                            <div className="box-table-cell" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', borderRight: '1px solid var(--border)', padding: '10px 5px', fontWeight: 'bold' }}>
+                                            <div className="box-table-cell" onClick={(e) => { e.stopPropagation(); openTradeDetails(t); }} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', borderRight: '1px solid var(--border)', padding: '10px 5px', fontWeight: 'bold', cursor: 'pointer', color: 'var(--primary)', textDecoration: 'underline' }}>
                                                 <span className="cell-label">Symbol</span>
                                                 {t.symbol}
                                             </div>
